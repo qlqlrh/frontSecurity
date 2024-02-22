@@ -3,10 +3,10 @@ var router = express.Router();
 
 /* GET users listing. */
 router.get("/", function (req, res, next) {
-  res.render("board", { title: "게시글 작성" });
+  res.render("csrf", { title: "CSRF" });
 });
 
-router.post("/", function (req, res, next) {
+router.post("/remit", function (req, res, next) {
   const { title, context } = req.body;
   console.log("context: ", context);
   console.log("title: ", title);

@@ -1,6 +1,30 @@
 var express = require("express");
-const { selectSignin } = require("../db");
+/////////////////////////////
+const session = require("express-session"); //session 관리를 위해
+const cookieParser = require("cookie-parser"); //쿠키 읽고 쓰기를 위해
+const crypto = require("crypto"); //
+////////////////////////////
 var router = express.Router();
+
+//세션 관리 설정
+router.use(
+  session({
+    secret: "session",
+    resave: false,
+    saveUninitialized: true,
+    cookie: {
+      //세션 쿠키 설정
+      httpOnly: true, //Javascript를 통한 쿠키 탈취문제를 예방
+      secure: false, //true로 설정하면 https가 아닌 통신에서는 쿠키를 전송하지 않음
+      maxAge: 60 * 1000 * 5,
+    },
+  })
+);
+
+router.use(express.urlencoded({ extended: true })); //폼의 데이터를 읽을 수 있도록 URL 인코딩 활성화
+router.use(cookieParser()); //쿠키를 읽고 쓰기 위해
+
+let sessionData = {};
 
 /* GET home page. */
 router.get("/", function (req, res, next) {
@@ -31,33 +55,42 @@ router.post("/signin", function (req, res, next) {
   }
 
   // 2. 아이디, 비번 정보를 이용하여 데이터베이스의 쿼리 수행
-  selectSignin({
-    uid: uid,
-    upw: upw,
-  }).then(({ err, rows }) => {
-    // [ { name: '게스트', ... } ]
-    if (rows.length > 0) {
-      // 3. 계정 정보가 존재하면
-      console.log("회원 정보 존재");
-      //  3-1. 회원 정보 획득 (전부 or 일부)
-      //  3-2. 로그 처리 등등 필요한 작업 수행
-      //  3-3. 세션 처리, 필요 정보 저장
-      // TODO 세션 생성
-      // console.log(req.session.uid, req.session.name);
-      // req.session.uid = uid;
-      // req.session.name = rows[0].name; // 쿼리 결과에서 0번 취하고 (일치하는 회원은 1명, 그 밑(객체)에 멤버 name 추출)
-      //  3-4. 홈페이지로 이동
-      res.redirect("/board");
-    } else {
-      // 4. 계정 정보가 없다면
-      console.log("회원 정보 없음");
-      //  4-1. 오류 메시지 전송 -> 특정 페이지로 포워딩 or 뒤로 가게 처리
-      showMsg(res, "일치하는 회원 정보가 없습니다.");
-      return;
-    }
-    console.log(rows);
-  });
-  // res.send('로그인 처리');
+  if (uid == "guest" && upw == "1234") {
+    /////////////////////////////////////////////////
+    sessionData = req.session;
+    sessionData.username = uid;
+    /////////////////////////////////////////////
+    // 3. 계정 정보가 존재하면
+    console.log("회원 정보 존재");
+    //  3-1. 회원 정보 획득 (전부 or 일부)
+    //  3-2. 로그 처리 등등 필요한 작업 수행
+    //  3-3. 세션 처리, 필요 정보 저장
+    // TODO 세션 생성
+    // console.log(req.session.uid, req.session.name);
+    // req.session.uid = uid;
+    // req.session.name = rows[0].name; // 쿼리 결과에서 0번 취하고 (일치하는 회원은 1명, 그 밑(객체)에 멤버 name 추출)
+    //  3-4. 홈페이지로 이동
+    res.redirect("/csrf");
+  } else {
+    // 4. 계정 정보가 없다면
+    console.log("회원 정보 없음");
+    //  4-1. 오류 메시지 전송 -> 특정 페이지로 포워딩 or 뒤로 가게 처리
+    showMsg(res, "일치하는 회원 정보가 없습니다.");
+    return;
+  }
+  console.log(rows);
 });
+// res.send('로그인 처리');
+
+// router.post("/remit", (req, res) => {
+//   if (!req.session.username || req.session.username !== sessionData.username) {
+//     res.status(403);
+//     res.send("로그인 필요");
+//     return;
+//   }
+
+//   const { to, amount } = req.body;
+//   res.send(`${to} 에게 ${amount}원을 송금하였습니다.`);
+// });
 
 module.exports = router;

