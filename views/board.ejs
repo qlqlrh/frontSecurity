@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/stylesheets/style.css" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  </head>
+  <body>
+    <h1><%= title %></h1>
+
+    <form method="post" id="addForm">
+      <p><input type="text" id="title" name="title" placeholder="title" /></p>
+      <p>
+        <textarea id="content" name="content" placeholder="content"></textarea>
+      </p>
+      <button type="submit">추가</button>
+    </form>
+    <br />
+    <hr />
+    <br />
+    <div id="resultView"></div>
+    <script>
+      $("#addForm").on("submit", (e) => {
+        // 화면이 넘어가지 않게 제어
+        e.preventDefault();
+        let title = $("#title").val();
+        let content = $("#content").val();
+
+        let dyHtml = `
+      <div>
+        <h3>${title}</h3>
+        <p>${content}</p>  
+        <br />
+    <hr />
+      </div>
+    `;
+        $("#resultView").append(dyHtml);
+        $("#title").val("");
+        $("#content").val("");
+        return false;
+      });
+    </script>
+  </body>
+</html>
